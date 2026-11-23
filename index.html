@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#1c211f">
+<meta name="color-scheme" content="light dark">
+<meta name="robots" content="noindex">
+<title>Inventario Mueblería</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Crect x='3' y='11' width='24' height='10' rx='3' fill='%231f5c57'/%3E%3Crect x='1' y='8' width='5' height='13' rx='2' fill='%231f5c57'/%3E%3Crect x='24' y='8' width='5' height='13' rx='2' fill='%231f5c57'/%3E%3Crect x='7' y='7' width='16' height='6' rx='2' fill='%23a8742f'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap">
+<style>
+/* Layout: barra superior con menú (abajo en celular), una vista a la vez; tablero = resumen arriba, detalle abajo. */
+:root{
+  --bg:#f3f4f2; --surface:#ffffff; --surface-2:#eceeea; --line:#d9ddd6;
+  --ink:#1c211f; --muted:#5d6661; --accent:#1f5c57; --accent-ink:#ffffff; --accent-soft:#dcebe8;
+  --oak:#a8742f; --oak-soft:#f2e6d3; --plum:#6c4f7d;
+  --good:#2f7a3e; --good-soft:#e1f0e3; --warn:#9a6200; --warn-soft:#fbeed2; --bad:#b3261e; --bad-soft:#fae3e1;
+  --display:"Archivo","Segoe UI",system-ui,sans-serif; --body:"Inter","Segoe UI",system-ui,sans-serif;
+  --r:10px; --shadow:0 1px 2px rgba(20,30,25,.06),0 4px 14px rgba(20,30,25,.05);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#141816; --surface:#1c211f; --surface-2:#242a27; --line:#323a36;
+  --ink:#e8ece9; --muted:#9aa6a0; --accent:#5fb3aa; --accent-ink:#0d1614; --accent-soft:#1f3633;
+  --oak:#d6a25c; --oak-soft:#3a2f20; --plum:#b294c4;
+  --good:#7cc48a; --good-soft:#1d3322; --warn:#e5b45a; --warn-soft:#3a2e15; --bad:#f08a80; --bad-soft:#3d1f1c;
+  --shadow:0 1px 2px rgba(0,0,0,.3); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141816; --surface:#1c211f; --surface-2:#242a27; --line:#323a36;
+  --ink:#e8ece9; --muted:#9aa6a0; --accent:#5fb3aa; --accent-ink:#0d1614; --accent-soft:#1f3633;
+  --oak:#d6a25c; --oak-soft:#3a2f20; --plum:#b294c4;
+  --good:#7cc48a; --good-soft:#1d3322; --warn:#e5b45a; --warn-soft:#3a2e15; --bad:#f08a80; --bad-soft:#3d1f1c;
+  --shadow:0 1px 2px rgba(0,0,0,.3); color-scheme:dark}
+*{box-sizing:border-box}
+html{-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%;overscroll-behavior-y:none}
+button,a,[role="button"],tr.click,label,select{touch-action:manipulation}
+button,.btn,nav.menu a,.seg button,a.kpi,th{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.btn,nav.menu a,.seg button,a.kpi{transition:transform 120ms cubic-bezier(.23,1,.32,1),background-color 120ms,filter 120ms}
+.btn:active:not(:disabled),.seg button:active,a.kpi:active{transform:scale(.97)}
+nav.menu a:active{background:var(--surface-2)}
+.btn.primary:active:not(:disabled){filter:brightness(.92)}
+@media (pointer:coarse){input,select,textarea{font-size:16px!important} .btn{min-height:44px} .seg button{min-height:38px} input.count{width:100px}}
+[hidden]{display:none!important}
+:root{padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;font-size:14px}
+img{max-width:100%}
+body.out nav.menu{display:none}
+body.out{padding-bottom:24px}
+.userbox{display:flex;align-items:center;gap:8px;font-size:.78rem;color:var(--muted);min-width:0}
+.userbox span{max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media (max-width:859px){.userbox span{display:none}}
+.loginwrap{display:flex;justify-content:center;padding-block:8vh 24px}
+.loginbox{width:min(400px,100%);display:flex;flex-direction:column;gap:14px;padding:24px}
+.loginbox form{display:flex;flex-direction:column;gap:12px}
+html,body{background:var(--bg);color:var(--ink)}
+body{font-family:var(--body);font-size:14px;line-height:1.45;padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))}
+@media (min-width:860px){body{padding-bottom:24px}}
+h1,h2,h3{font-family:var(--display);margin:0;text-wrap:balance;letter-spacing:-.01em}
+h2{font-size:1.35rem;font-weight:700}
+h3{font-size:1rem;font-weight:700}
+.num,td.n,.kpi b{font-variant-numeric:tabular-nums}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+/* encabezado y menú */
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--surface);border-bottom:1px solid var(--line)}
+header.top .wrap{display:flex;align-items:center;gap:20px;padding-block:10px}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.brand svg{flex:none}
+.brand h1{font-size:1.05rem;font-weight:800;white-space:nowrap}
+.brand small{display:block;color:var(--muted);font-size:.75rem;font-family:var(--body);font-weight:500}
+nav.menu{display:flex;gap:4px;margin-left:auto}
+nav.menu a{display:flex;align-items:center;gap:7px;padding:8px 12px;border-radius:8px;color:var(--muted);text-decoration:none;font-weight:600;font-size:.9rem}
+@media (hover:hover) and (pointer:fine){nav.menu a:hover{background:var(--surface-2);color:var(--ink)}}
+nav.menu a[aria-current="page"]{background:var(--accent-soft);color:var(--accent)}
+nav.menu svg{width:18px;height:18px}
+@media (max-width:859px){
+  nav.menu{position:fixed;left:0;right:0;bottom:0;margin:0;background:var(--surface);border-top:1px solid var(--line);
+    padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px));
+    justify-content:space-around;z-index:9}
+  nav.menu a{flex-direction:column;gap:2px;font-size:.7rem;padding:6px 4px;flex:1;text-align:center}
+  nav.menu svg{width:22px;height:22px}
+}
+.status{font-size:.75rem;color:var(--muted);white-space:nowrap}
+@media (max-width:859px){.status{margin-left:auto}}
+.status .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--muted);margin-right:5px;vertical-align:middle}
+.status.ok .dot{background:var(--good)} .status.err .dot{background:var(--bad)}
+
+main{padding-block:20px 32px}
+section.view{display:flex;flex-direction:column;gap:18px}
+.vhead{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.vhead p{margin:4px 0 0;color:var(--muted)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;min-width:0}
+.panel h3{margin-bottom:12px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media (max-width:859px){.grid2{grid-template-columns:1fr}}
+
+/* KPIs */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+@media (max-width:859px){.kpis{grid-template-columns:repeat(2,1fr)}}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.kpi span{color:var(--muted);font-size:.78rem;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.kpi b{font-family:var(--display);font-size:clamp(1.15rem,5.4vw,1.7rem);font-weight:700;line-height:1.15;overflow-wrap:anywhere}
+.kpi small{color:var(--muted);font-size:.78rem}
+.kpi.alert{border-color:var(--bad);background:var(--bad-soft)} .kpi.alert b{color:var(--bad)}
+.kpi.attn{border-color:var(--warn);background:var(--warn-soft)}
+
+/* botones / formularios */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:9px 14px;font-weight:600;cursor:pointer;text-decoration:none;color:var(--ink)}
+@media (hover:hover) and (pointer:fine){.btn:hover{background:var(--surface-2)} .btn.primary:hover{filter:brightness(1.07)} tbody tr.click:hover{background:var(--surface-2)}}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.danger{color:var(--bad);border-color:var(--bad)}
+.btn.sm{padding:5px 10px;font-size:.82rem}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+label.f{display:flex;flex-direction:column;gap:5px;font-weight:600;font-size:.82rem;color:var(--muted);min-width:0}
+input[type=text],input[type=number],input[type=date],input[type=search],input[type=email],input[type=password],select,textarea{
+  width:100%;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:9px 11px;font-size:.95rem;color:var(--ink);min-width:0}
+textarea{resize:vertical;min-height:60px}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);outline:none;box-shadow:0 0 0 3px var(--accent-soft)}
+.formgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.formgrid .full{grid-column:1/-1}
+@media (max-width:600px){.formgrid{grid-template-columns:1fr}}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 12px;font-weight:600;font-size:.82rem;cursor:pointer;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.filters{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
+.filters > *{flex:1 1 160px}
+.filters .grow{flex:3 1 260px}
+
+/* tablas */
+.tablewrap{overflow-x:auto;overscroll-behavior-x:contain;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:.88rem}
+th{text-align:left;font-weight:600;color:var(--muted);font-size:.74rem;text-transform:uppercase;letter-spacing:.04em;padding:9px 10px;border-bottom:1px solid var(--line);background:var(--surface-2);white-space:nowrap;position:sticky;top:0}
+td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:last-child td{border-bottom:0}
+td.n,th.n{text-align:right}
+tbody tr.click{cursor:pointer}
+tbody tr.click:active{background:var(--surface-2)}
+.code{font-family:ui-monospace,"SFMono-Regular",Consolas,monospace;font-size:.78rem;color:var(--muted)}
+.pos{color:var(--good);font-weight:600} .neg{color:var(--bad);font-weight:600}
+
+.pill{display:inline-block;padding:2px 9px;border-radius:999px;font-size:.74rem;font-weight:700;white-space:nowrap}
+.pill.ok{background:var(--good-soft);color:var(--good)}
+.pill.low{background:var(--bad-soft);color:var(--bad)}
+.pill.out{background:var(--bad);color:#fff}
+.pill.none{background:var(--surface-2);color:var(--muted)}
+.pill.rev{background:var(--warn-soft);color:var(--warn)}
+.loc{display:inline-flex;gap:4px;flex-wrap:wrap}
+.loc span{font-size:.75rem;padding:2px 7px;border-radius:6px;background:var(--surface-2);white-space:nowrap}
+.loc span b{font-variant-numeric:tabular-nums}
+
+/* listas compactas */
+.list{display:flex;flex-direction:column}
+.list .row{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);align-items:center}
+.list .row:last-child{border-bottom:0}
+.list .row .l{min-width:0}
+.list .row .l div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.list .row small{color:var(--muted);display:block}
+.empty{color:var(--muted);padding:18px 4px;text-align:center}
+.empty b{display:block;color:var(--ink);font-family:var(--display);margin-bottom:4px}
+
+/* gráficas */
+.chart svg{width:100%;height:auto;display:block}
+.chart text{fill:var(--muted);font-size:11px;font-family:var(--body)}
+.chart .lbl{fill:var(--ink);font-size:12px;font-weight:600}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:.8rem;color:var(--muted);margin-top:8px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+
+/* panel de producto */
+dialog{border:1px solid var(--line);border-radius:14px;background:var(--surface);color:var(--ink);padding:0;width:min(720px,calc(100vw - 24px));max-height:calc(100dvh - 40px)}
+dialog::backdrop{background:rgba(10,15,13,.45)}
+.dlg{display:flex;flex-direction:column;max-height:calc(100dvh - 42px)}
+.dlg header{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;padding:16px 18px;border-bottom:1px solid var(--line)}
+.dlg header > div{min-width:0} #dTitle{overflow-wrap:anywhere} .dlg header .btn{flex-shrink:0}
+.hbars{display:flex;flex-direction:column;gap:10px}
+.hrow{display:grid;grid-template-columns:minmax(0,10rem) minmax(0,1fr) auto;gap:10px;align-items:center}
+.hl{font-weight:600;font-size:.85rem;overflow-wrap:anywhere}
+.track{display:flex;height:16px;border-radius:3px;background:var(--surface-2);overflow:hidden}
+.track span{height:100%;display:block}
+.hv{font-size:.82rem;color:var(--muted);text-align:right;min-width:3ch}
+@media (max-width:520px){.hrow{grid-template-columns:minmax(0,1fr) auto;row-gap:4px}.hl{grid-column:1/-1}}
+.row.tap{cursor:pointer}
+.list .row > b{white-space:nowrap;flex-shrink:0}
+.kpi.money b{overflow-wrap:normal;white-space:nowrap}
+@media (max-width:520px){.kpi.money{grid-column:1/-1}}
+.stockcards b{overflow-wrap:anywhere}
+@media (max-width:600px){.c-code,.c-cat{display:none} input.count{width:66px} td,th{padding:8px 6px}}
+.dlg .body{padding:16px 18px;overflow:auto;overscroll-behavior:contain;display:flex;flex-direction:column;gap:16px}
+.stockcards{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+@media (max-width:520px){.stockcards{grid-template-columns:repeat(2,1fr)}}
+.stockcards div{background:var(--surface-2);border-radius:8px;padding:10px}
+.stockcards span{display:block;font-size:.72rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.stockcards b{font-family:var(--display);font-size:1.4rem;font-variant-numeric:tabular-nums}
+.stockcards .tot{background:var(--accent-soft)} .stockcards .tot b{color:var(--accent)}
+
+.note{border-radius:8px;padding:10px 12px;font-size:.85rem}
+.note.warn{background:var(--warn-soft);color:var(--ink);border:1px solid var(--warn)}
+.note.info{background:var(--accent-soft)}
+.note.bad{background:var(--bad-soft);border:1px solid var(--bad)}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(88px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--surface);padding:10px 16px;border-radius:10px;font-weight:600;z-index:20;max-width:calc(100vw - 32px);box-shadow:var(--shadow)}
+@media (min-width:860px){.toast{bottom:24px}}
+.stickybar{position:sticky;bottom:calc(70px + env(safe-area-inset-bottom,0px));display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:10px 14px;box-shadow:var(--shadow);flex-wrap:wrap}
+@media (min-width:860px){.stickybar{bottom:12px}}
+input.count{width:90px;text-align:right;padding:6px 8px}
+tr.changed td{background:var(--oak-soft)}
+.muted{color:var(--muted)}
+.right{text-align:right}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body class="out">
+<header class="top">
+  <div class="wrap">
+    <div class="brand">
+      <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><rect x="3" y="11" width="24" height="10" rx="3" fill="var(--accent)"/><rect x="1" y="8" width="5" height="13" rx="2" fill="var(--accent)"/><rect x="24" y="8" width="5" height="13" rx="2" fill="var(--accent)"/><rect x="7" y="7" width="16" height="6" rx="2" fill="var(--oak)"/><rect x="5" y="21" width="2" height="3" fill="var(--ink)"/><rect x="23" y="21" width="2" height="3" fill="var(--ink)"/></svg>
+      <div><h1>Inventario Mueblería</h1><small>Mueblería · Bodega · Taller</small></div>
+    </div>
+    <nav class="menu" aria-label="Menú">
+      <a href="#tablero" data-v="tablero"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>Tablero</a>
+      <a href="#buscar" data-v="buscar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>Buscar</a>
+      <a href="#registrar" data-v="registrar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>Registrar</a>
+      <a href="#conteo" data-v="conteo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h3"/></svg>Inventario</a>
+      <a href="#historial" data-v="historial"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg>Historial</a>
+    </nav>
+    <div class="status" id="status"><span class="dot"></span><span id="statusText">Conectando…</span></div>
+    <div class="userbox" id="userBox" hidden><span id="userEmail"></span><button class="btn sm" id="btnSalir" type="button">Salir</button></div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div id="globalNote"></div>
+
+  <section class="loginwrap" id="login" hidden>
+    <div class="panel loginbox">
+      <div><h2>Entrar</h2><p class="muted" style="margin:6px 0 0">Usa el correo y la contraseña que te dio el administrador.</p></div>
+      <form id="loginForm" novalidate>
+        <label class="f">Correo<input type="email" id="lEmail" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" inputmode="email" enterkeyhint="next" required></label>
+        <label class="f">Contraseña<input type="password" id="lPass" autocomplete="current-password" enterkeyhint="go" required></label>
+        <button class="btn primary" id="lSubmit" type="submit">Entrar</button>
+        <button class="btn" id="lForgot" type="button">Olvidé mi contraseña</button>
+      </form>
+      <div id="lNote"></div>
+    </div>
+  </section>
+  <div id="app" hidden>
+  <!-- TABLERO -->
+  <section class="view" id="v-tablero">
+    <div class="vhead">
+      <div><h2>Tablero</h2><p>Cómo está el inventario hoy, en las tres ubicaciones.</p></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><a class="btn primary" href="#registrar">+ Registrar movimiento</a><button class="btn" id="dlStock" type="button">Descargar existencias</button></div>
+    </div>
+    <div class="kpis" id="kpis"></div>
+    <div class="grid2">
+      <div class="panel chart"><h3>Piezas por categoría y ubicación</h3><div id="chartCat"></div><div class="legend" id="legendCat"></div></div>
+      <div class="panel chart"><h3>Entradas y salidas · últimos 30 días</h3><div id="chartDays"></div><div class="legend"><span><i style="background:var(--good)"></i>Entradas</span><span><i style="background:var(--bad)"></i>Salidas (ventas, consumo, merma)</span></div></div>
+    </div>
+    <div class="grid2">
+      <div class="panel"><h3>Por reabastecer</h3><div class="list" id="lowList"></div></div>
+      <div class="panel"><h3>Últimos movimientos</h3><div class="list" id="lastList"></div></div>
+    </div>
+  </section>
+
+  <!-- BUSCAR -->
+  <section class="view" id="v-buscar" hidden>
+    <div class="vhead">
+      <div><h2>Buscar</h2><p>Escribe parte del nombre o código. Toca un renglón para ver y editar el producto.</p></div>
+      <button class="btn" id="btnNuevo" type="button">+ Producto nuevo</button>
+    </div>
+    <div class="panel filters">
+      <label class="f grow">Buscar<input type="search" id="q" enterkeyhint="search" autocorrect="off" autocapitalize="none" spellcheck="false" placeholder="Ej. confort gris, vanity, lino, SAL-012" autocomplete="off"></label>
+      <label class="f">Categoría<select id="fCat"></select></label>
+      <label class="f">Mostrar<select id="fEstado">
+        <option value="">Todos</option><option value="low">Por reabastecer</option><option value="out">Agotados</option>
+        <option value="M">Con existencia en Mueblería</option><option value="B">Con existencia en Bodega</option><option value="T">Con existencia en Taller</option>
+        <option value="rev">A revisar (decimales o negativos)</option><option value="nocost">Sin costo capturado</option>
+      </select></label>
+    </div>
+    <div class="muted" id="resCount"></div>
+    <div class="tablewrap"><table><thead><tr><th class="c-code">Código</th><th>Producto</th><th class="c-cat">Categoría</th><th class="n">Mueblería</th><th class="n">Bodega</th><th class="n">Taller</th><th class="n">Total</th><th>Estado</th></tr></thead><tbody id="resBody"></tbody></table></div>
+  </section>
+
+  <!-- REGISTRAR -->
+  <section class="view" id="v-registrar" hidden>
+    <div class="vhead"><div><h2>Registrar movimiento</h2><p>Venta, compra, traspaso entre ubicaciones, producción o merma.</p></div></div>
+    <form class="panel formgrid" id="movForm" autocomplete="off">
+      <label class="f full">Producto o material
+        <input type="text" id="mProd" list="prodList" enterkeyhint="next" autocorrect="off" autocapitalize="none" spellcheck="false" placeholder="Escribe para buscar…" required>
+        <datalist id="prodList"></datalist>
+      </label>
+      <div class="full" id="mStock"></div>
+      <div class="full"><div class="f" style="margin-bottom:6px">Tipo de movimiento</div><div class="seg" id="mTipo"></div></div>
+      <label class="f" id="lblUbic">Ubicación<select id="mUbic"></select></label>
+      <label class="f" id="lblDest" hidden>Hacia<select id="mDest"></select></label>
+      <label class="f">Cantidad<input type="number" id="mQty" min="0" step="any" inputmode="decimal" enterkeyhint="next" required></label>
+      <label class="f">Fecha<input type="date" id="mFecha" required></label>
+      <label class="f full">Nota (folio, cliente, proveedor)<input type="text" id="mNota" maxlength="140" enterkeyhint="done" placeholder="Ej. Nota 0153, Sra. López"></label>
+      <div class="full" id="mWarn"></div>
+      <div class="full" style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn primary" type="submit" id="mSave">Guardar movimiento</button><button class="btn" type="reset" id="mClear">Limpiar</button></div>
+    </form>
+  </section>
+
+  <!-- CONTEO -->
+  <section class="view" id="v-conteo" hidden>
+    <div class="vhead"><div><h2>Inventario físico</h2><p>Elige la ubicación, captura lo que cuentes y guarda. Solo se ajustan los renglones que llenes.</p></div></div>
+    <div class="panel filters">
+      <label class="f">Ubicación<select id="cUbic"></select></label>
+      <label class="f">Categoría<select id="cCat"></select></label>
+      <label class="f grow">Buscar<input type="search" id="cQ" enterkeyhint="search" autocorrect="off" autocapitalize="none" spellcheck="false" placeholder="Filtrar la lista" autocomplete="off"></label>
+    </div>
+    <div class="tablewrap"><table><thead><tr><th class="c-code">Código</th><th>Producto</th><th class="n">Sistema</th><th class="n">Contado</th><th class="n">Dif.</th></tr></thead><tbody id="cBody"></tbody></table></div>
+    <div class="stickybar"><div id="cSummary" class="muted">Sin capturas todavía.</div><div style="display:flex;gap:8px"><button class="btn" id="cDiscard" type="button">Borrar captura</button><button class="btn primary" id="cSave" type="button" disabled>Guardar ajustes</button></div></div>
+  </section>
+
+  <!-- HISTORIAL -->
+  <section class="view" id="v-historial" hidden>
+    <div class="vhead"><div><h2>Historial</h2><p>Todos los movimientos registrados, del más reciente al más antiguo.</p></div><button class="btn" id="dlMov" type="button">Descargar movimientos</button></div>
+    <div class="panel filters">
+      <label class="f grow">Producto<input type="search" id="hQ" enterkeyhint="search" autocorrect="off" autocapitalize="none" spellcheck="false" placeholder="Nombre o código" autocomplete="off"></label>
+      <label class="f">Tipo<select id="hTipo"></select></label>
+      <label class="f">Ubicación<select id="hUbic"></select></label>
+      <label class="f">Desde<input type="date" id="hDesde"></label>
+      <label class="f">Hasta<input type="date" id="hHasta"></label>
+    </div>
+    <div class="muted" id="hCount"></div>
+    <div class="tablewrap"><table><thead><tr><th>Fecha</th><th>Producto</th><th>Tipo</th><th>Ubicación</th><th class="n">Cantidad</th><th>Nota</th><th>Registró</th><th></th></tr></thead><tbody id="hBody"></tbody></table></div>
+    <div id="hMore"></div>
+  </section>
+  </div>
+</main>
+
+<dialog id="dlg"><div class="dlg">
+  <header><div><div class="code" id="dCode"></div><h3 id="dTitle" style="font-size:1.2rem"></h3><div class="muted" id="dSub"></div></div><button class="btn sm" id="dClose" type="button">Cerrar</button></header>
+  <div class="body">
+    <div class="stockcards" id="dStock"></div>
+    <div id="dFlags"></div>
+    <form class="formgrid" id="dForm">
+      <label class="f full">Nombre<input type="text" id="dNombre" maxlength="80" required></label>
+      <label class="f">Categoría<input type="text" id="dCat" list="catList" maxlength="40" required><datalist id="catList"></datalist></label>
+      <label class="f">Tipo<select id="dTipo"><option>Producto terminado</option><option>Materia prima</option></select></label>
+      <label class="f">Unidad<input type="text" id="dUnidad" maxlength="10" placeholder="pza, m, hoja…" required></label>
+      <label class="f">Stock mínimo<input type="number" id="dMin" min="0" step="any" inputmode="decimal" placeholder="Sin definir"></label>
+      <label class="f">Costo unitario ($)<input type="number" id="dCosto" min="0" step="any" inputmode="decimal" placeholder="Sin capturar"></label>
+      <label class="f">Precio de venta ($)<input type="number" id="dPrecio" min="0" step="any" inputmode="decimal" placeholder="Sin capturar"></label>
+      <div class="full" style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn primary" type="submit" id="dSave">Guardar cambios</button><button class="btn" type="button" id="dMove">Registrar movimiento</button></div>
+    </form>
+    <div><h3 style="margin-bottom:8px">Movimientos de este producto</h3><div class="list" id="dHist"></div></div>
+  </div>
+</div></dialog>
+
+
+<dialog id="pwDlg"><div class="dlg">
+  <header><div><h3 style="font-size:1.2rem">Crea tu contraseña nueva</h3><div class="muted">Mínimo 8 caracteres.</div></div></header>
+  <div class="body"><form class="formgrid" id="pwForm" style="grid-template-columns:1fr">
+    <label class="f">Contraseña nueva<input type="password" id="pw1" autocomplete="new-password" required></label>
+    <label class="f">Repite la contraseña<input type="password" id="pw2" autocomplete="new-password" required></label>
+    <button class="btn primary" type="submit">Guardar contraseña</button>
+  </form></div>
+</div></dialog>
+
+<script src="vendor/supabase-2.45.4.js"></script>
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
